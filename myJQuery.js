@@ -33,7 +33,7 @@ function $(el){
         var f=Utils.str(20,10);
         el.setAttribute('data-f',f);
         var $el=$('[data-f="'+f+'"]');
-        el.removeAttribute('data-f');
+        $el.removeAttr('data-f');
         fn&&fn.call($el,evt);
       },false);
     });
@@ -87,12 +87,15 @@ function $(el){
           Array.from(_this).forEach(function($el){
             for(var $type in $events[el].evtsPool){
               var eventHandle=function(evt){
+                var $f=Utils.str(20,10);
+                evt.target.setAttribute('data-f', $f);
+                var $evt=$('[data-f="'+$f+'"]');
                 var $evts=$events[el].evtsPool[$type];
                 if ($evts.length) {
                   var _tar=null,_fn=null;
                   for(var i=0;i<$evts.length;i++){
                     if ($el.querySelectorAll($evts[i].tar).length>0) {
-                      evt.target.className+=' data-event-target';
+                      $evt.addClass('data-event-target');
                         Array.from($el.querySelectorAll($evts[i].tar)).forEach(function(ta){
                           if (evt.target==ta) {
                             _tar=ta;
@@ -106,7 +109,7 @@ function $(el){
                             return false;
                           }
                         });
-                      evt.target.className=evt.target.className.replace('data-event-target','');
+                      $evt.removeClass('data-event-target').removeAttr('data-f');
                         if (_tar!=null) {
                           _fn=$evts[i].fn;
                           break;
@@ -136,9 +139,7 @@ function $(el){
         $this.parentNode.setAttribute('data-parent-node',f);
       });
       var res=$('[data-parent-node="'+f+'"]');
-      Array.from(res).forEach(function($res){
-        $res.removeAttribute('data-parent-node');
-      });
+      res.removeAttr('data-parent-node');
       return res;
     },
     parents:function(el){
@@ -164,9 +165,7 @@ function $(el){
             };
           });
           var $res=$('[data-f="'+f+'"]');
-          Array.from($res).forEach(function($$res){
-            $$res.removeAttribute('data-f');
-          });
+          $res.removeAttr('data-f');
           return $res;
         };
       };
@@ -198,6 +197,12 @@ function $(el){
         });
         return this;
       };
+    },
+    removeAttr:function(attr){
+      Array.from(this).forEach(function($this){
+        $this.removeAttribute(attr);
+      });
+      return this;
     },
     html:function(str){
       var result=this;
@@ -243,9 +248,7 @@ function $(el){
         });
       });
       var $res=$('[data-f="'+f+'"]');
-      Array.from($res).forEach(function($$res){
-        $$res.removeAttribute('data-f');
-      });
+      $res.removeAttr('data-f');
       return $res;
     },
     css:function(cssText){
