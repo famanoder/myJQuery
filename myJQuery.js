@@ -176,13 +176,13 @@ function $(el){
     },
     addClass:function(clas){
       Array.from(this).forEach(function(elem){
-        elem.className=elem.className.replace(clas,'')+' '+clas;
+        elem.className=Array.from(new Set(elem.className.split(/\s+/).concat([clas]))).join(' ');
       });
       return this;
     },
     removeClass:function(clas){
       Array.from(this).forEach(function(elem){
-        elem.className=elem.className.replace(clas,'');
+        elem.className=elem.className.split(/\s+/).filter(function($clas){return $clas!=clas}).join(' ');
       });
       return this;
     },
