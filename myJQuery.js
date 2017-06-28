@@ -27,6 +27,23 @@ var Utils=function(){
 
 var $events={};
 function $(el){
+  function parseHtm(html){
+    // 解析html
+    var $htm = String(html).match(/<(\w+).*?>(.*?)<\/\1>$/);
+    var tag = null;
+    if ($htm) {
+      var attrs = html.match(/<.+?>/)[0].match(/[\w\-]+=["'].*?["']/g)
+      tag = document.createElement($htm[1]);
+      tag.innerHTML=$htm[2];
+      if (attrs&&attrs.length) {
+        attrs.forEach(function(item){
+          var $item=item.split(/=/);
+          tag.setAttribute($item[0], $item[1].replace(/'|"/g,''));
+        });
+      };
+    }
+    return tag||document.createTextNode(html);
+  }
   function events(type,fn){
     Array.from($$(el)).forEach(function(el){
       el.addEventListener(type,function(evt){
@@ -216,22 +233,10 @@ function $(el){
       return result;
     },
     append:function(html){
-      // 解析html
-      var $htm = html.match(/<(\w+).*?>(.*?)<\/\1>/);
-      var attrs = html.match(/<.+?>/)[0].match(/[\w\-]+=["'].*?["']/g)
-      if ($htm) {
-        var tag = document.createElement($htm[1]);
-        tag.innerHTML=$htm[2];
-        if (attrs.length) {
-          attrs.forEach(function(item){
-            var $item=item.split(/=/);
-            tag.setAttribute($item[0], $item[1].replace(/'|"/g,''));
-          });
-        };
-        Array.from(this).forEach(function($this){
-          $this.appendChild(tag);
-        });
-      };
+      var tag=parseHtm(html);
+      Array.from(this).forEach(function($this){
+        $this.appendChild(tag);
+      });
       return this;
     },
     remove:function(){
@@ -251,6 +256,36 @@ function $(el){
       $res.removeAttr('data-f');
       return $res;
     },
+    before:function(html){
+      var node=parseHtm(html);
+      Array.from(this).forEach(function($this){
+        $this.parentNode.insertBefore(node, $this);
+      });
+      return this;
+    },
+    after:function(html){
+      var node=parseHtm(html);
+      Array.from(this).forEach(function($this){
+        var $next=$this.nextSibling;
+        if ($next) {
+          var nextType=$next.nodeType;
+          if (nextType==1) {
+            //element
+            $next.parentNode.insertBefore(node, $next);
+          }else if(nextType==3){
+            //#text
+            $this.parentNode.replaceChild(node,$next);
+            $this.parentNode.appendChild($next);
+          };
+        }else{
+          //null
+          $this.parentNode.appendChild(node);
+        };
+      });
+      return this;
+    },
+    pre:function(){},
+    next:function(){},
     css:function(cssText){
       Array.from(this).forEach(function($this){
         $this.style.cssText+=cssText;
@@ -269,7 +304,6 @@ function $(el){
     }
   },evts,$.extend);
 };
-
 
 function $$(el){
   return document.querySelectorAll(el);
