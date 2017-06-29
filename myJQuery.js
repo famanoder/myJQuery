@@ -103,47 +103,51 @@ function $(el){
           //阻止事件绑定多次执行
           Array.from(_this).forEach(function($el){
             for(var $type in $events[el].evtsPool){
-              var eventHandle=function(evt){
-                var $f=Utils.str(20,10);
-                evt.target.setAttribute('data-f', $f);
-                var $evt=$('[data-f="'+$f+'"]');
-                var $evts=$events[el].evtsPool[$type];
-                if ($evts.length) {
-                  var _tar=null,_fn=null;
-                  for(var i=0;i<$evts.length;i++){
-                    if ($el.querySelectorAll($evts[i].tar).length>0) {
-                      $evt.addClass('data-event-target');
-                        Array.from($el.querySelectorAll($evts[i].tar)).forEach(function(ta){
-                          if (evt.target==ta) {
-                            _tar=ta;
-                          }else{
-                            if (ta.querySelectorAll('.data-event-target').length) {
+              (function($type){
+                var eventHandle=function(evt){
+                  // evt.stopPropagation();
+                  var $f=Utils.str(20,10);
+                  evt.target.setAttribute('data-f', $f);
+                  var $evt=$('[data-f="'+$f+'"]');
+                  var $evts=$events[el].evtsPool[$type];
+                  console.log($evts)
+                  if ($evts&&$evts.length) {
+                    var _tar=null,_fn=null;
+                    for(var i=0;i<$evts.length;i++){
+                      if ($el.querySelectorAll($evts[i].tar).length>0) {
+                        $evt.addClass('data-event-target');
+                          Array.from($el.querySelectorAll($evts[i].tar)).forEach(function(ta){
+                            if (evt.target==ta) {
                               _tar=ta;
+                            }else{
+                              if (ta.querySelectorAll('.data-event-target').length) {
+                                _tar=ta;
+                              }
+                            };
+                            if (_tar!=null) {
+                              _fn=$evts[i].fn;
+                              return false;
                             }
-                          };
+                          });
+                        $evt.removeClass('data-event-target').removeAttr('data-f');
                           if (_tar!=null) {
                             _fn=$evts[i].fn;
-                            return false;
+                            break;
                           }
-                        });
-                      $evt.removeClass('data-event-target').removeAttr('data-f');
-                        if (_tar!=null) {
-                          _fn=$evts[i].fn;
-                          break;
-                        }
+                      }
                     }
-                  }
-                  if (_tar!=null) {
-                    var f=Utils.str(20,10);
-                    _tar.setAttribute('data-f', f);
-                    var $res=$('[data-f="'+f+'"]');
-                    $res[0].removeAttribute('data-f');
-                    _fn&&_fn.call($res,evt);
+                    if (_tar!=null) {
+                      var f=Utils.str(20,10);
+                      _tar.setAttribute('data-f', f);
+                      var $res=$('[data-f="'+f+'"]');
+                      $res[0].removeAttribute('data-f');
+                      _fn&&_fn.call($res,evt);
+                    };
                   };
-                };
-              }
-              $events[el].evtsPool[$type].eventHandle=eventHandle;
-              $el.addEventListener($type,eventHandle,false);
+                }
+                $events[el].evtsPool[$type].eventHandle=eventHandle;
+                $el.addEventListener($type,eventHandle,true);
+              })($type);
             }
           });
         },0);
